@@ -35,6 +35,7 @@ from optparse import make_option
 from swapper import load_model
 from tqdm import tqdm
 
+import django
 from django import VERSION as django_version
 from django.contrib.gis.gdal.envelope import Envelope
 from django.contrib.gis.geos import Point
@@ -233,6 +234,15 @@ class Command(BaseCommand):
             items = [e.strip() for e in line.split('\t')]
             yield items
 
+    def sample_size(self,total: int):
+        CITIES_SAMPLE = django.conf.settings.CITIES_SAMPLE
+        CITIES_SAMPLE_SIZE = django.conf.settings.CITIES_SAMPLE_SIZE
+        if CITIES_SAMPLE and CITIES_SAMPLE_SIZE < total:
+            self.logger.info("Sampling {} of {} records".format(
+                settings.CITIES_SAMPLE_SIZE, total))
+            return settings.CITIES_SAMPLE_SIZE
+        return total
+
     def import_country(self):
         self.download('country')
         data = self.get_data('country')
@@ -333,6 +343,7 @@ class Command(BaseCommand):
         self.build_country_index()
 
         total = sum(1 for _ in data)
+        total = self.sample_size(total)
 
         data = self.get_data('region')
 
@@ -401,6 +412,7 @@ class Command(BaseCommand):
         data = self.get_data('subregion')
 
         total = sum(1 for _ in data)
+        total = self.sample_size(total)
 
         data = self.get_data('subregion')
 
@@ -463,6 +475,7 @@ class Command(BaseCommand):
         data = self.get_data('city')
 
         total = sum(1 for _ in data)
+        total = self.sample_size(total)
 
         data = self.get_data('city')
 
@@ -576,6 +589,7 @@ class Command(BaseCommand):
         data = self.get_data('city')
 
         total = sum(1 for _ in data)
+        total = self.sample_size(total)
 
         data = self.get_data('city')
 
@@ -684,7 +698,7 @@ class Command(BaseCommand):
         data = self.get_data('alt_name')
 
         total = sum(1 for _ in data)
-
+        total = self.sample_size(total)
         data = self.get_data('alt_name')
 
         geo_index = {}
@@ -826,6 +840,7 @@ class Command(BaseCommand):
         data = self.get_data('postal_code')
 
         total = sum(1 for _ in data)
+        total = self.sample_size(total)
 
         data = self.get_data('postal_code')
 
